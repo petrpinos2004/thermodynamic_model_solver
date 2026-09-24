@@ -60,8 +60,9 @@ def find_longest_true_sequence(arr):
 
 class thermodynamic_model():
 
-    def __init__(self, physics, maths, plot=False):
+    def __init__(self, physics, maths, name, plot=False):
 
+        self.name = name
         self.plot = plot
         self.physics = physics
         self.maths = maths
@@ -161,9 +162,14 @@ class thermodynamic_model():
     def run(self):
 
         colors = ['blue', 'red', 'limegreen']
+        output_filename = Path(
+            rf'C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\thermodynamic_model\data_output\raw_simulation_data\{self.name}.txt'
+        )
+        output_image = Path(
+            rf'C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\thermodynamic_model\image_output\spectral_method_convection_{self.name}.png'
+        )
 
         plt.figure(figsize=(10, 6))
-
         for i, A_temp in enumerate(self.physics['amplitudes']):
             print(f"Running simulation: Amplitude = {A_temp*1000:.1f} mK")
             
@@ -201,17 +207,13 @@ class thermodynamic_model():
         plt.ylabel('Temperature [K]')
         plt.title('Thermal Response at Cell Center x = 150 mm')
         plt.legend()
-        plt.savefig('spectral_method_convection_h432.png', dpi=300, facecolor='white')
+        plt.savefig(output_image, dpi=300, facecolor='white')
 
         if self.plot:
             plt.show()
         else:
             plt.close()
 
-        # --- Save Results to File ---
-        output_filename = Path(
-            r"C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\automaticke_zpracovani_dat\simulation_results_h432_kappa_my2.txt"
-        )
         time_vector = sol.t 
         all_data = np.column_stack([time_vector] + self.solutions['results_list'])
 

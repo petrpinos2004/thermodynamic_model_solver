@@ -3,7 +3,7 @@ import numpy as np
 
 class simulation(thermodynamic_model.thermodynamic_model):
 
-    def __init__(self, plot=False):
+    def __init__(self, name='h432', plot=False):
 
         physics = {
             'L' : 0.3,  
@@ -33,8 +33,8 @@ class simulation(thermodynamic_model.thermodynamic_model):
         maths['mid_idx'] = maths['Nx'] // 2
         maths['BL_mask'] = maths['x'] <= 5 * physics['delta_diff']
 
-        super().__init__(physics, maths, plot)
+        super().__init__(physics, maths, name, plot)
 
-h432 = simulation()
+h432 = simulation(name='h432')
 h432.run()
 
