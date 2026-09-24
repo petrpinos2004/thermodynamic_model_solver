@@ -1,2 +1,4 @@
 *.png
 *.vscode*
+*image_output/
+*data_output/
