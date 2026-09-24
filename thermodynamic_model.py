@@ -1,48 +1,15 @@
+###################################################
+# Import libraries
+###################################################
+
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-from matplotlib.cm import viridis
 from pathlib import Path
 
-# --- Parameters ---
-L = 0.3  
-kappa = 2.25e-7      # Thermal diffusivity
-gamma = 1.92         # Gamma
-nu = 1.83e-7         # Dynamic viscosity
-g = 9.81             # Gravity
-alpha_p = 1.96       # Expansivity
-ratio = 1/3          # Nu-Ra exponent
-xi = 0.06             # Nu-Ra prefactor
-delta_diff = 0.00268 # Stokes diffusion layer thickness
-
-T_init = 5.0         # Starting fluid temp (K)
-T_center = 5.1       # Modulation temp center (K)
-freq = 0.01          # Modulation frequency
-amplitudes = [0.025, 0.050, 0.075] 
-colors = ['blue', 'red', 'limegreen']
-
-N = 100              # Sine modes 
-Nx = 500             # Spatial grid points
-tmax = 1500          # Total simulation time
-
-# --- Storage for File Output ---
-results_list = []
-header_names = ["Time(s)"]
-
-x = np.linspace(0, L, Nx)
-dx = x[1] - x[0]
-mid_idx = Nx // 2
-BL_mask = x <= 5*delta_diff # Mask to strictly restrict Nu to the boundary layer
-
-
-# --- Functions ---
-def T_top(t, A_temp): 
-    return T_center + A_temp * np.sin(2 * np.pi * freq * t)
-    
-def dT_top_dt(t, A_temp): 
-    return A_temp * (2 * np.pi * freq) * np.cos(2 * np.pi * freq * t)
-
-import numpy as np
+###################################################
+# Define helper methods
+###################################################
 
 def find_longest_true_sequence(arr):
     arr = np.array(arr, dtype=bool)
@@ -87,40 +54,88 @@ def find_longest_true_sequence(arr):
             return best_start, best_end
     return None, None
 
-def convection_on(deltaT, deltaL):
-    if deltaT > 0:
-        if deltaL > 0:
-            Ra = (g*alpha_p*deltaT)/(nu*kappa) * deltaL**3
-            Nu = xi * Ra**ratio
-            if Nu > 1:
-                return {'Nu' : Nu,
-                        'Ra' : Ra}
-    return {'Nu' : 1,
-            'Ra' : 0}
+###################################################
+# Class thermodynamic_model
+###################################################
 
-def system(t, c, A_temp):
+class thermodynamic_model():
 
-    T = c @ base_functions['psi'] + T_top(t, A_temp)
-    grad_T = c @ base_functions['d_psi_dx'] 
-    
-    # 2. Spatially varying Nusselt profile Nu(x)
-    Nu_arr = np.ones(Nx)
-    unstable_mask = (grad_T > 1e-3) & BL_mask
-    start, end = find_longest_true_sequence(unstable_mask)
-    
-    if end is not None:
-        if start is not None:
-            deltaT = T[end] - T[start]
-            deltaL = x[end] - x[start]
-            convection = convection_on(deltaT, deltaL)
-            Nu_arr[start:end] = convection['Nu']
-    
-    kappa_xt = kappa * (Nu_arr) 
-    heat_flux = kappa_xt * grad_T 
-    diffusion_projection = -(2.0 / L) * (base_functions['d_psi_dx'] @ heat_flux) * dx
-    PE_RHS_term = -(1.0/gamma) * (2.0 / (L * base_functions['lambda'])) * dT_top_dt(t, A_temp)
+    def __init__(self, physics, maths):
 
-    return PE_matrix @ (diffusion_projection + PE_RHS_term)
+        self.physics = physics
+        self.maths = maths
+
+        maths['lambda'], maths['psi'], maths['d_psi_dx'] = self.base_functions(maths['N'],maths['Nx'])
+        maths['Minv'] = self.PE_matrix(maths['N'],maths['Nx'])
+
+    # --- Functions ---
+    def T_top(self, t, A_temp): 
+        return self.physics['T_center'] + A_temp * np.sin(2 * np.pi * self.physics['freq'] * t)
+
+    def dT_top_dt(self, t, A_temp): 
+        return A_temp * (2 * np.pi * self.physics['freq']) * np.cos(2 * np.pi * self.physics['freq'] * t)
+
+    def base_functions(self, N, Nx):
+        # --- Modes and Pre-calculated Operators ---
+        lambd = (np.arange(N) + 0.5) * np.pi / self.physics['L']
+            
+        # Basis matrices: shape (N, Nx)
+        psi = np.sin(np.outer(lambd, self.maths['x']))                 
+        d_psi_dx = lambd[:, None] * np.cos(np.outer(lambd, x))
+            
+        return lambd, psi, d_psi_dx
+
+    def PE_matrix(self, N, Nx):
+        # Overlap integral and Piston Mass Matrix
+        Sn = 1.0 / base_functions['lambda']
+        M = np.eye(N) - (2.0 * (1.0 - 1.0 / self.physics['gamma']) / self.physics['L']**2) * np.outer(Sn, Sn)
+        Minv = np.linalg.inv(M)
+        return Minv
+
+    def convection_on(self, deltaT, deltaL):
+        if deltaT > 0:
+            if deltaL > 0:
+                Ra = (self.physics['g']*self.physics['alpha_p']*deltaT)/(self.physics['nu']*self.physics['kappa']) * deltaL**3
+                Nu = self.physics['xi'] * Ra**self.physics['ratio']
+                if Nu > 1:
+                    return {'Nu' : Nu,
+                            'Ra' : Ra}
+        return {'Nu' : 1,
+                'Ra' : 0}
+
+    def system(self, t, c, A_temp):
+
+        T = c @ self.maths['psi'] + self.T_top(t, A_temp)
+        grad_T = c @ self.maths['d_psi_dx'] 
+        
+        # 2. Spatially varying Nusselt profile Nu(x)
+        Nu_arr = np.ones(self.maths['Nx'])
+        unstable_mask = (grad_T > 1e-3) & self.maths['BL_mask']
+        start, end = find_longest_true_sequence(unstable_mask)
+        
+        if end is not None:
+            if start is not None:
+                deltaT = T[end] - T[start]
+                deltaL = self.maths['x'][end] - self.maths['x'][start]
+                convection = self.convection_on(deltaT, deltaL)
+                Nu_arr[start:end] = convection['Nu']
+        
+        kappa_xt = self.physics['kappa'] * (Nu_arr) 
+        heat_flux = kappa_xt * grad_T 
+        diffusion_projection = -(2.0 / L) * (self.maths['d_psi_dx'] @ heat_flux) * self.maths['dx']
+        PE_RHS_term = -(1.0/self.physics['gamma']) * (2.0 / (self.physics['L'] * self.maths['lambda'])) * self.dT_top_dt(t, A_temp)
+
+        return PE_matrix @ (diffusion_projection + PE_RHS_term)
+
+
+
+
+# --- Storage for File Output ---
+results_list = []
+header_names = ["Time(s)"]
+
+
+
 
 def compute_Ra_history(sol, A_temp):
     Ra_array = np.zeros(len(sol.t))
@@ -143,25 +158,9 @@ def compute_Ra_history(sol, A_temp):
     return {'Ra' : Ra_array,
             'Nu' : Nu_array}
 
-def base_functions(N,Nx):
-    # --- Modes and Pre-calculated Operators ---
-    lambd = (np.arange(N) + 0.5) * np.pi / L
-    
-    # Basis matrices: shape (N, Nx)
-    psi = np.sin(np.outer(lambd, x))                 
-    d_psi_dx = lambd[:, None] * np.cos(np.outer(lambd, x))
-    
-    return {'lambda'  : lambd,
-            'psi'     : psi,
-            'd_psi_dx':d_psi_dx
-           }
 
-def PE_matrix(N,Nx):
-    # Overlap integral and Piston Mass Matrix
-    Sn = 1.0 / base_functions['lambda']
-    M = np.eye(N) - (2.0 * (1.0 - 1.0 / gamma) / L**2) * np.outer(Sn, Sn)
-    Minv = np.linalg.inv(M)
-    return Minv
+
+
 
 base_functions = base_functions(N,Nx)
 PE_matrix = PE_matrix(N,Nx)
