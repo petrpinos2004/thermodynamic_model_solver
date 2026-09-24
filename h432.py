@@ -1,7 +1,12 @@
-import thermodynamic_model
+import python_core.thermodynamic_model as mother
+import python_core.data_processing as father
 import numpy as np
 
-class simulation(thermodynamic_model.thermodynamic_model):
+####################################################
+# Define Simulation class
+####################################################
+
+class Simulation(mother.thermodynamic_model):
 
     def __init__(self, name='h432', plot=False):
 
@@ -35,6 +40,21 @@ class simulation(thermodynamic_model.thermodynamic_model):
 
         super().__init__(physics, maths, name, plot)
 
-h432 = simulation(name='h432')
+####################################################
+# Define Data class
+####################################################
+
+class Data(father.Data):
+
+    def __init__(self, name, f0):
+
+        super().__init__(name, f0)
+
+####################################################
+# Call
+####################################################
+
+h432 = Simulation(name='h432')
 h432.run()
+Data(h432.name, [h432.physics['freq'], h432.physics['freq'], h432.physics['freq']])
 

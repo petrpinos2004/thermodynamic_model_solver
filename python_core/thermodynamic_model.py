@@ -1,7 +1,3 @@
-###################################################
-# Import libraries
-###################################################
-
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
@@ -55,7 +51,7 @@ def find_longest_true_sequence(arr):
     return None, None
 
 ###################################################
-# Class thermodynamic_model
+# Define thermodynamic_model class
 ###################################################
 
 class thermodynamic_model():
