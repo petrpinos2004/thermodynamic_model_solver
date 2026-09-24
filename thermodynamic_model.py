@@ -60,13 +60,23 @@ def find_longest_true_sequence(arr):
 
 class thermodynamic_model():
 
-    def __init__(self, physics, maths):
+    def __init__(self, physics, maths, plot=False):
 
+        self.plot = plot
         self.physics = physics
         self.maths = maths
 
         maths['lambda'], maths['psi'], maths['d_psi_dx'] = self.base_functions(maths['N'],maths['Nx'])
-        maths['Minv'] = self.PE_matrix(maths['N'],maths['Nx'])
+        maths['PE_matrix'] = self.PE_matrix(maths['N'],maths['Nx'])
+
+        self.solutions = {
+            'solutions' : [],
+            'Ra_history' : [],
+            'Nu_history' : [],
+            'results_list' : [],
+            'header_names' : ["Time(s)"],
+            't_eval' : np.linspace(0, self.physics['tmax'], 2 * self.physics['tmax'])
+        }
 
     # --- Functions ---
     def T_top(self, t, A_temp): 
@@ -125,116 +135,102 @@ class thermodynamic_model():
         diffusion_projection = -(2.0 / L) * (self.maths['d_psi_dx'] @ heat_flux) * self.maths['dx']
         PE_RHS_term = -(1.0/self.physics['gamma']) * (2.0 / (self.physics['L'] * self.maths['lambda'])) * self.dT_top_dt(t, A_temp)
 
-        return PE_matrix @ (diffusion_projection + PE_RHS_term)
+        return self.maths['PE_matrix'] @ (diffusion_projection + PE_RHS_term)
 
-
-
-
-# --- Storage for File Output ---
-results_list = []
-header_names = ["Time(s)"]
-
-
-
-
-def compute_Ra_history(sol, A_temp):
-    Ra_array = np.zeros(len(sol.t))
-    Nu_array = np.ones(len(sol.t))
-    # Reconstruct physical spatial profiles for all time steps
-    T_all = (sol.y.T @ base_functions['psi']) + T_top(sol.t, A_temp)[:, None]
-    grad_T_all = sol.y.T @ base_functions['d_psi_dx']
-    
-    for tidx in range(len(sol.t)):
-        unstable_mask = (grad_T_all[tidx] > 1e-3) & BL_mask
-        start, end = find_longest_true_sequence(unstable_mask)
+    def compute_Ra_history(self, sol, A_temp):
+        Ra_array = np.zeros(len(sol.t))
+        Nu_array = np.ones(len(sol.t))
+        # Reconstruct physical spatial profiles for all time steps
+        T_all = (sol.y.T @ self.maths['psi']) + self.T_top(sol.t, A_temp)[:, None]
+        grad_T_all = sol.y.T @ self.maths['d_psi_dx']
         
-        if start is not None and end is not None:
-            deltaT = T_all[tidx, end] - T_all[tidx, start]
-            deltaL = x[end] - x[start]
-            convection = convection_on(deltaT, deltaL)
-            Ra_array[tidx] = convection['Ra']
-            Nu_array[tidx] = convection['Nu']
+        for tidx in range(len(sol.t)):
+            unstable_mask = (grad_T_all[tidx] > 1e-3) & self.maths['BL_mask']
+            start, end = find_longest_true_sequence(unstable_mask)
             
-    return {'Ra' : Ra_array,
-            'Nu' : Nu_array}
+            if start is not None and end is not None:
+                deltaT = T_all[tidx, end] - T_all[tidx, start]
+                deltaL = self.maths['x'][end] - self.maths['x'][start]
+                convection = self.convection_on(deltaT, deltaL)
+                Ra_array[tidx] = convection['Ra']
+                Nu_array[tidx] = convection['Nu']
+                
+        return {'Ra' : Ra_array,
+                'Nu' : Nu_array}
 
+    def run(self):
 
+        colors = ['blue', 'red', 'limegreen']
 
+        plt.figure(figsize=(10, 6))
 
+        for i, A_temp in enumerate(self.physics['amplitudes']):
+            print(f"Running simulation: Amplitude = {A_temp*1000:.1f} mK")
+            
+            c0 = (self.physics['T_init'] - self.T_top(0, A_temp)) * (2.0 / (self.physics['L'] * self.maths['lambda']))
+            
+            sol = solve_ivp(
+                fun=lambda t, c: self.system(t, c, A_temp),
+                t_span=[0, self.physics['tmax']],
+                y0=c0,
+                t_eval=self.solutions['t_eval'],
+                method='Radau'  # Changed to implicit solver for stiff step-function jump
+            )
+            self.solutions['solutions'].append(sol)
+            
+            T_mid = (sol.y.T @ self.maths['psi'][:, self.maths['mid_idx']]) + self.T_top(sol.t, A_temp)   
+            T_b = (sol.y.T @ self.maths['psi'][:, -1]) + self.T_top(sol.t, A_temp)
+            T_ref = self.T_top(sol.t, A_temp)
+            
+            history = self.compute_Ra_history(sol, A_temp)
+            self.solutions['Ra_history'].append(history['Ra'])
+            self.solutions['Nu_history'].append(history['Nu'])
+            
+            self.solutions['results_list'].append(T_mid)
+            self.solutions['results_list'].append(T_ref)
+            self.solutions['results_list'].append(T_b)
+            label = f"{int(A_temp*1000)}mK"
+            self.solutions['header_names'].append(f"Age_AT_{label}")
+            self.solutions['header_names'].append(f"Ref_AT_{label}")
+            self.solutions['header_names'].append(f"Tb_AT_{label}")
 
-base_functions = base_functions(N,Nx)
-PE_matrix = PE_matrix(N,Nx)
+            plt.plot(sol.t, T_mid, color=colors[i], 
+                    label=f'$AT={int(A_temp*1000)}$ mK')
 
-# --- Run Simulation Sweep ---
-t_eval = np.linspace(0, tmax, 2 * tmax)
-plt.figure(figsize=(10, 6))
+        plt.xlabel('Time [s]')
+        plt.ylabel('Temperature [K]')
+        plt.title('Thermal Response at Cell Center x = 150 mm')
+        plt.legend()
+        plt.savefig('spectral_method_convection_h432.png', dpi=300, facecolor='white')
 
-solutions = [] # Store solution objects for post-processing/verification
-Ra_history = []
-Nu_history = []
+        if self.plot:
+            plt.show()
+        else:
+            plt.close()
 
-for i, A_temp in enumerate(amplitudes):
-    print(f"Running simulation: Amplitude = {A_temp*1000:.1f} mK")
-    
-    c0 = (T_init - T_top(0, A_temp)) * (2.0 / (L * base_functions['lambda']))
-    
-    sol = solve_ivp(
-        fun=lambda t, c: system(t, c, A_temp),
-        t_span=[0, tmax],
-        y0=c0,
-        t_eval=t_eval,
-        method='Radau'  # Changed to implicit solver for stiff step-function jump
-    )
-    solutions.append(sol)
-    
-    T_mid = (sol.y.T @ base_functions['psi'][:, mid_idx]) + T_top(sol.t, A_temp)   
-    T_b = (sol.y.T @ base_functions['psi'][:, -1]) + T_top(sol.t, A_temp)
-    T_ref = T_top(sol.t, A_temp)
-    
-    history = compute_Ra_history(sol, A_temp)
-    Ra_history.append(history['Ra'])
-    Nu_history.append(history['Nu'])
-    
-    results_list.append(T_mid)
-    results_list.append(T_ref)
-    results_list.append(T_b)
-    label = f"{int(A_temp*1000)}mK"
-    header_names.append(f"Age_AT_{label}")
-    header_names.append(f"Ref_AT_{label}")
-    header_names.append(f"Tb_AT_{label}")
+        # --- Save Results to File ---
+        output_filename = Path(
+            r"C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\automaticke_zpracovani_dat\simulation_results_h432_kappa_my2.txt"
+        )
+        time_vector = sol.t 
+        all_data = np.column_stack([time_vector] + self.solutions['results_list'])
 
-    plt.plot(sol.t, T_mid, color=colors[i], 
-             label=f'$AT={int(A_temp*1000)}$ mK')
+        with open(output_filename, 'w') as f:
+            f.write("spectral_simulation_check\n")
+            f.write("\t".join(self.solutions['header_names']) + "\n")
+            for row in all_data:
+                line = "\t".join(map(str, row))
+                f.write(line + "\n")
+        print(f"Data successfully saved to {output_filename}")
 
-plt.xlabel('Time [s]')
-plt.ylabel('Temperature [K]')
-plt.title('Thermal Response at Cell Center x = 150 mm')
-plt.legend()
-plt.savefig('spectral_method_convection_h432.png', dpi=300, facecolor='white')
-plt.show()
+        if self.plot:
+            plt.plot(sol.t, self.solutions['Ra_history'][0])
+            plt.plot(sol.t, self.solutions['Ra_histor'][1])
+            plt.plot(sol.t, self.solutions['Ra_history'][2])
+            plt.yscale('log')
+            plt.show()
 
-# --- Save Results to File ---
-output_filename = Path(
-    r"C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\automaticke_zpracovani_dat\simulation_results_h432_kappa_my2.txt"
-)
-time_vector = sol.t 
-all_data = np.column_stack([time_vector] + results_list)
-
-with open(output_filename, 'w') as f:
-    f.write("spectral_simulation_check\n")
-    f.write("\t".join(header_names) + "\n")
-    for row in all_data:
-        line = "\t".join(map(str, row))
-        f.write(line + "\n")
-print(f"Data successfully saved to {output_filename}")
-
-plt.plot(sol.t, Ra_history[0])
-plt.plot(sol.t, Ra_history[1])
-plt.plot(sol.t, Ra_history[2])
-plt.yscale('log')
-plt.show()
-
-plt.plot(sol.t, Nu_history[0])
-plt.plot(sol.t, Nu_history[1])
-plt.plot(sol.t, Nu_history[2])
-plt.show()
+            plt.plot(sol.t, self.solutions['Nu_history'][0])
+            plt.plot(sol.t, self.solutions['Nu_history'][1])
+            plt.plot(sol.t, self.solutions['Nu_history'][2])
+            plt.show()
