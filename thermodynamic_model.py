@@ -91,13 +91,13 @@ class thermodynamic_model():
             
         # Basis matrices: shape (N, Nx)
         psi = np.sin(np.outer(lambd, self.maths['x']))                 
-        d_psi_dx = lambd[:, None] * np.cos(np.outer(lambd, x))
+        d_psi_dx = lambd[:, None] * np.cos(np.outer(lambd, self.maths['x']))
             
         return lambd, psi, d_psi_dx
 
     def PE_matrix(self, N, Nx):
         # Overlap integral and Piston Mass Matrix
-        Sn = 1.0 / base_functions['lambda']
+        Sn = 1.0 / self.maths['lambda']
         M = np.eye(N) - (2.0 * (1.0 - 1.0 / self.physics['gamma']) / self.physics['L']**2) * np.outer(Sn, Sn)
         Minv = np.linalg.inv(M)
         return Minv
@@ -132,7 +132,7 @@ class thermodynamic_model():
         
         kappa_xt = self.physics['kappa'] * (Nu_arr) 
         heat_flux = kappa_xt * grad_T 
-        diffusion_projection = -(2.0 / L) * (self.maths['d_psi_dx'] @ heat_flux) * self.maths['dx']
+        diffusion_projection = -(2.0 / self.physics['L']) * (self.maths['d_psi_dx'] @ heat_flux) * self.maths['dx']
         PE_RHS_term = -(1.0/self.physics['gamma']) * (2.0 / (self.physics['L'] * self.maths['lambda'])) * self.dT_top_dt(t, A_temp)
 
         return self.maths['PE_matrix'] @ (diffusion_projection + PE_RHS_term)
@@ -225,7 +225,7 @@ class thermodynamic_model():
 
         if self.plot:
             plt.plot(sol.t, self.solutions['Ra_history'][0])
-            plt.plot(sol.t, self.solutions['Ra_histor'][1])
+            plt.plot(sol.t, self.solutions['Ra_history'][1])
             plt.plot(sol.t, self.solutions['Ra_history'][2])
             plt.yscale('log')
             plt.show()

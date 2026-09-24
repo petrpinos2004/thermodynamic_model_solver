@@ -1,9 +1,9 @@
 import thermodynamic_model
 import numpy as np
 
-class simulation_h432(thermodynamic_model.thermodynamic_model):
+class simulation(thermodynamic_model.thermodynamic_model):
 
-    def __init__(self):
+    def __init__(self, plot=False):
 
         physics = {
             'L' : 0.3,  
@@ -19,13 +19,13 @@ class simulation_h432(thermodynamic_model.thermodynamic_model):
             'T_init' : 5.0,         # Starting fluid temp (K)
             'T_center' : 5.1,       # Modulation temp center (K)
             'freq' : 0.01,          # Modulation frequency
-            'amplitudes' : [0.025, 0.050, 0.075]  # Modulation for simulation sweep
+            'amplitudes' : [0.025, 0.050, 0.075],  # Modulation for simulation sweep
+            'tmax': 1500,          # Total simulation time
         }
 
         maths = {
             'N': 100,              # Sine modes
             'Nx': 500,             # Spatial grid points
-            'tmax': 1500,          # Total simulation time
         }
 
         maths['x'] = np.linspace(0, physics['L'], maths['Nx'])
@@ -33,7 +33,8 @@ class simulation_h432(thermodynamic_model.thermodynamic_model):
         maths['mid_idx'] = maths['Nx'] // 2
         maths['BL_mask'] = maths['x'] <= 5 * physics['delta_diff']
 
-        super().__init__(physics, maths)
+        super().__init__(physics, maths, plot)
 
-simulation_h432()
+h432 = simulation()
+h432.run()
 
