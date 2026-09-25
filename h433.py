@@ -25,7 +25,7 @@ class Simulation(mother.thermodynamic_model):
             'T_center' : 5.1,       # Modulation temp center (K)
             'freq' : [0.0045],          # Modulation frequency
             'amplitudes' : [0.025, 0.075, 0.120],  # Modulation for simulation sweep
-            'tmax': [1000],          # Total simulation time
+            'tmax': [1800],          # Total simulation time
         }
 
         maths = {
@@ -54,7 +54,7 @@ class Data(father.Data):
 # Call
 ####################################################
 
-h433 = Simulation()
+h433 = Simulation(plot=True)
 h433.run()
 Data(h433.name, h433.physics['freq'], h433.plot)
 

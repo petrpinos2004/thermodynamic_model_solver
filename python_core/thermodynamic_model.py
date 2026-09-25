@@ -213,7 +213,7 @@ class thermodynamic_model():
             self.solutions['results_list'].append(T_ref)
             self.solutions['results_list'].append(T_b)
             self.solutions['result_times'].append(sol.t)
-            label = f"f_{int(freq*1000)}kHz" if frequency_sweep else f"AT_{int(A_temp*1000)}mK"
+            label = f"f_{freq}Hz" if frequency_sweep else f"AT_{int(A_temp*1000)}mK"
             self.solutions['header_names'].append(f"Age_{label}")
             self.solutions['header_names'].append(f"Ref_{label}")
             self.solutions['header_names'].append(f"Tb_{label}")

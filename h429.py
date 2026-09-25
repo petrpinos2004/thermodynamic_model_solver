@@ -24,7 +24,7 @@ class Simulation(mother.thermodynamic_model):
             'T_init' : 5.0,         # Starting fluid temp (K)
             'T_center' : 5.1,       # Modulation temp center (K)
             'freq' : [0.0045],          # Modulation frequency
-            'amplitudes' : [0.025, 0.050, 0.075],  # Modulation for simulation sweep
+            'amplitudes' : [0.025, 0.075],  # Modulation for simulation sweep
             'tmax': [1800],          # Total simulation time
         }
 
