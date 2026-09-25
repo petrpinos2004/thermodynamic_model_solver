@@ -305,12 +305,10 @@ def cross_correlation_analysis(data1, data2, f0, show=0):
     signal1 = data1[1] / max(data1[1])
     signal2 = data2[1] / max(data2[1])
 
-    # Interpolation factor (e.g., 5x finer)
-    T = 1/f0
-    points = T/0.1
+    # Interpolate to roughly 0.1 s spacing without creating huge arrays.
     step_old = time1[1] - time1[0]
-    factor = int(points/step_old)
-    new_time = np.linspace(time1[0], time1[-1], len(time1) * factor)
+    target_step = min(0.1, step_old)
+    new_time = np.arange(time1[0], time1[-1], target_step)
 
     # Cubic spline interpolation
     cs1 = CubicSpline(time1, signal1)

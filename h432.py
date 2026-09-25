@@ -54,7 +54,7 @@ class Data(father.Data):
 # Call
 ####################################################
 
-h432 = Simulation(plot=True)
+h432 = Simulation()
 h432.run()
 Data(h432.name, h432.physics['freq'], h432.plot)
 

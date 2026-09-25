@@ -19,13 +19,13 @@ class Simulation(mother.thermodynamic_model):
             'alpha_p' : 2.23,       # Expansivity
             'ratio' : 1/3,          # Nu-Ra exponent
             'xi' : 0.06,             # Nu-Ra prefactor
-            'delta_diff' : [0.00441, 0.00253, 0.00146], # Stokes diffusion layer thickness
+            'delta_diff' : [0.00146, 0.00253, 0.00441], # Stokes diffusion layer thickness
             
             'T_init' : 5.0,         # Starting fluid temp (K)
             'T_center' : 5.1,       # Modulation temp center (K)
-            'freq' : [0.0033, 0.01, 0.03],          # Modulation frequency
+            'freq' : [0.03, 0.01, 0.0033],          # Modulation frequency
             'amplitudes' : [0.050],  # Modulation for simulation sweep
-            'tmax': [1800, 1000, 300],          # Total simulation time
+            'tmax': [300, 1000, 1800],          # Total simulation time
         }
 
         maths = {
@@ -53,7 +53,7 @@ class Data(father.Data):
 # Call
 ####################################################
 
-h431 = Simulation(plot=True)
+h431 = Simulation()
 h431.run()
 Data(h431.name, h431.physics['freq'], h431.plot)
 

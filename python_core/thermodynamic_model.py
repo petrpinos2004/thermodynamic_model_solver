@@ -166,6 +166,8 @@ class thermodynamic_model():
         colors = ['blue', 'red', 'limegreen']
         output_filename = Path('data_output') / 'raw_simulation_data' / f'{self.name}.txt'
         output_image = Path('image_output') / f'spectral_method_convection_{self.name}.png'
+        output_Ra = Path('image_output') / f'spectral_method_convection_{self.name}_Ra.png'
+        output_Nu = Path('image_output') / f'spectral_method_convection_{self.name}_Nu.png'
 
         frequency_sweep = len(self.physics['freq']) > 1
 
@@ -222,7 +224,6 @@ class thermodynamic_model():
         plt.title('Thermal Response at Cell Center x = 150 mm')
         plt.legend()
         plt.savefig(output_image, dpi=300, facecolor='white')
-
         if self.plot:
             plt.show()
         else:
@@ -245,14 +246,21 @@ class thermodynamic_model():
                 f.write(line + "\n")
         print(f"Data successfully saved to {output_filename}")
 
+        plt.figure(figsize=(10, 6))
+        for i in range(len(sweep)):
+            plt.plot(self.solutions['solutions'][i].t, self.solutions['Ra_history'][i], color = colors[i])
+        plt.yscale('log')
+        plt.savefig(output_Ra, dpi=300, facecolor='white')
         if self.plot:
-            plt.figure(figsize=(10, 6))
-            for i in range(len(sweep)):
-                plt.plot(self.solutions['solutions'][i].t, self.solutions['Ra_history'][i], color = colors[i])
-            plt.yscale('log')
             plt.show()
+        else:
+            plt.close()
 
-            plt.figure(figsize=(10, 6))
-            for i in range(len(sweep)):
-                plt.plot(self.solutions['solutions'][i].t, self.solutions['Nu_history'][i], color = colors[i])
+        plt.figure(figsize=(10, 6))
+        for i in range(len(sweep)):
+            plt.plot(self.solutions['solutions'][i].t, self.solutions['Nu_history'][i], color = colors[i])
+        plt.savefig(output_Nu, dpi=300, facecolor='white')
+        if self.plot:
             plt.show()
+        else:
+            plt.close()
