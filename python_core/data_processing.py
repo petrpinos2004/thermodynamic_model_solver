@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 
 class Data():
 
-    def __init__(self, name, f0 = [0.01,0.01,0.01], plot=False):
+    def __init__(self, name, f0, plot=False):
 
         #-------------------------- Starting sequence to guess looping parameters, names and dates--------------------
 

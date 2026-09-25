@@ -56,5 +56,5 @@ class Data(father.Data):
 
 h432 = Simulation(plot=True)
 h432.run()
-Data(h432.name, h432.physics['freq'])
+Data(h432.name, h432.physics['freq'], h432.plot)
 

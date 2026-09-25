@@ -75,6 +75,7 @@ class thermodynamic_model():
             'Ra_history' : [],
             'Nu_history' : [],
             'results_list' : [],
+            'result_times' : [],
             'header_names' : ["Time(s)"],
         }
 
@@ -211,10 +212,11 @@ class thermodynamic_model():
             self.solutions['results_list'].append(T_mid)
             self.solutions['results_list'].append(T_ref)
             self.solutions['results_list'].append(T_b)
-            label = f"{int(A_temp*1000)}mK"
-            self.solutions['header_names'].append(f"Age_AT_{label}")
-            self.solutions['header_names'].append(f"Ref_AT_{label}")
-            self.solutions['header_names'].append(f"Tb_AT_{label}")
+            self.solutions['result_times'].append(sol.t)
+            label = f"f_{int(freq*1000)}kHz" if frequency_sweep else f"AT_{int(A_temp*1000)}mK"
+            self.solutions['header_names'].append(f"Age_{label}")
+            self.solutions['header_names'].append(f"Ref_{label}")
+            self.solutions['header_names'].append(f"Tb_{label}")
 
             plt.plot(sol.t, T_mid, color=colors[i], 
                     label=f'$AT={int(A_temp*1000)}$ mK')
@@ -230,8 +232,14 @@ class thermodynamic_model():
         else:
             plt.close()
 
-        time_vector = sol.t 
-        all_data = np.column_stack([time_vector] + self.solutions['results_list'])
+        time_vector = np.unique(np.concatenate(self.solutions['result_times']))
+        resampled_results = []
+        for i, result in enumerate(self.solutions['results_list']):
+            result_time = self.solutions['result_times'][i // 3]
+            resampled_results.append(
+                np.interp(time_vector, result_time, result, left=np.nan, right=np.nan)
+            )
+        all_data = np.column_stack([time_vector] + resampled_results)
 
         with open(output_filename, 'w') as f:
             f.write("spectral_simulation_check\n")
@@ -244,11 +252,11 @@ class thermodynamic_model():
         if self.plot:
             plt.figure(figsize=(10, 6))
             for i in range(len(sweep)):
-                plt.plot(sol.t, self.solutions['Ra_history'][i], color = colors[i])
+                plt.plot(self.solutions['solutions'][i].t, self.solutions['Ra_history'][i], color = colors[i])
             plt.yscale('log')
             plt.show()
 
             plt.figure(figsize=(10, 6))
             for i in range(len(sweep)):
-                plt.plot(sol.t, self.solutions['Nu_history'][i], color = colors[i])
+                plt.plot(self.solutions['solutions'][i].t, self.solutions['Nu_history'][i], color = colors[i])
             plt.show()

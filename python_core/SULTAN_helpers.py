@@ -160,7 +160,8 @@ def create_time_sequence(r_query, z_query, variable, tol=1e-6):
         for i, h in enumerate(header_line):
             if h.startswith(variable):
                 temps = rough_file[:, i]
-                result.append(np.column_stack((times, temps)))        
+                valid = np.isfinite(times) & np.isfinite(temps)
+                result.append(np.column_stack((times[valid], temps[valid])))
         return result
     
     else:
