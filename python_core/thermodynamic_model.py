@@ -63,6 +63,10 @@ class thermodynamic_model():
         self.physics = physics
         self.maths = maths
 
+        maths['BL_mask'] = [
+            maths['x'] <= 5 * self.physics['delta_diff'][i]
+            for i in range(len(self.physics['delta_diff']))
+        ]
         maths['lambda'], maths['psi'], maths['d_psi_dx'] = self.base_functions(maths['N'],maths['Nx'])
         maths['PE_matrix'] = self.PE_matrix(maths['N'],maths['Nx'])
 
@@ -188,7 +192,7 @@ class thermodynamic_model():
             c0 = (self.physics['T_init'] - self.T_top(0, A_temp, freq)) * (2.0 / (self.physics['L'] * self.maths['lambda']))
             
             sol = solve_ivp(
-                fun=lambda t, c: self.system(t, c, A_temp, freq, BL_mask),
+                fun=lambda t, c: self.system(t, c, A_temp, freq, BL_mask[i]),
                 t_span=[0, tmax[i]],
                 y0=c0,
                 t_eval=t_eval[i],
@@ -200,7 +204,7 @@ class thermodynamic_model():
             T_b = (sol.y.T @ self.maths['psi'][:, -1]) + self.T_top(sol.t, A_temp, freq)
             T_ref = self.T_top(sol.t, A_temp, freq)
             
-            history = self.compute_Ra_history(sol, A_temp, freq, BL_mask)
+            history = self.compute_Ra_history(sol, A_temp, freq, BL_mask[i])
             self.solutions['Ra_history'].append(history['Ra'])
             self.solutions['Nu_history'].append(history['Nu'])
             

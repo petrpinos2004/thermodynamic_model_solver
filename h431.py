@@ -36,7 +36,6 @@ class Simulation(mother.thermodynamic_model):
         maths['x'] = np.linspace(0, physics['L'], maths['Nx'])
         maths['dx'] = maths['x'][1] - maths['x'][0]
         maths['mid_idx'] = maths['Nx'] // 2
-        maths['BL_mask'] = maths['x'] <= 5 * np.array(physics['delta_diff'])
 
         super().__init__(physics, maths, name, plot)
 
