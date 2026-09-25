@@ -8,7 +8,7 @@ import numpy as np
 
 class Simulation(mother.thermodynamic_model):
 
-    def __init__(self, name='h432', plot=False):
+    def __init__(self, name='h430', plot=False):
 
         physics = {
             'L' : 0.3,  
@@ -23,9 +23,9 @@ class Simulation(mother.thermodynamic_model):
             
             'T_init' : 5.0,         # Starting fluid temp (K)
             'T_center' : 5.1,       # Modulation temp center (K)
-            'freq' : [0.01],          # Modulation frequency
+            'freq' : [0.0045],          # Modulation frequency
             'amplitudes' : [0.025, 0.050, 0.075],  # Modulation for simulation sweep
-            'tmax': [1000],          # Total simulation time
+            'tmax': [1800],          # Total simulation time
         }
 
         maths = {
@@ -54,7 +54,7 @@ class Data(father.Data):
 # Call
 ####################################################
 
-h432 = Simulation(plot=True)
-h432.run()
-Data(h432.name, h432.physics['freq'])
+h430 = Simulation(plot=True)
+h430.run()
+Data(h430.name, h430.physics['freq'])
 

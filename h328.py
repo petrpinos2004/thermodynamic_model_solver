@@ -8,23 +8,23 @@ import numpy as np
 
 class Simulation(mother.thermodynamic_model):
 
-    def __init__(self, name='h432', plot=False):
+    def __init__(self, name='h328', plot=False):
 
         physics = {
             'L' : 0.3,  
-            'kappa' : 2.25e-7,      # Thermal diffusivity
-            'gamma' : 1.92,         # Gamma
-            'nu' : 1.83e-7,         # Dynamic viscosity
+            'kappa' : 1.54e-8,      # Thermal diffusivity
+            'gamma' : 7.61,         # Gamma
+            'nu' : 4.43e-8,         # Dynamic viscosity
             'g' : 9.81,             # Gravity
-            'alpha_p' : 1.96,       # Expansivity
+            'alpha_p' : 63.85,       # Expansivity
             'ratio' : 1/3,          # Nu-Ra exponent
             'xi' : 0.06,             # Nu-Ra prefactor
-            'delta_diff' : [0.00268], # Stokes diffusion layer thickness
+            'delta_diff' : [0.0007], # Stokes diffusion layer thickness
             
             'T_init' : 5.0,         # Starting fluid temp (K)
             'T_center' : 5.1,       # Modulation temp center (K)
             'freq' : [0.01],          # Modulation frequency
-            'amplitudes' : [0.025, 0.050, 0.075],  # Modulation for simulation sweep
+            'amplitudes' : [0.050],  # Modulation for simulation sweep
             'tmax': [1000],          # Total simulation time
         }
 
@@ -54,7 +54,7 @@ class Data(father.Data):
 # Call
 ####################################################
 
-h432 = Simulation(plot=True)
-h432.run()
-Data(h432.name, h432.physics['freq'])
+h328 = Simulation(plot=True)
+h328.run()
+Data(h328.name, h328.physics['freq'])
 

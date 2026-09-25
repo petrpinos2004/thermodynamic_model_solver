@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 
 class Data():
 
-    def __init__(self, name, f0 = [0.01,0.01,0.01]):
+    def __init__(self, name, f0 = [0.01,0.01,0.01], plot=False):
 
         #-------------------------- Starting sequence to guess looping parameters, names and dates--------------------
 
@@ -26,6 +26,9 @@ class Data():
         print(f"Sweeping parameter identified as: {sweep} \n "
             f"with values {parametric_sweep} \n")
 
+        if not len(f0)==len(parametric_sweep):
+            f0 = f0 * len(parametric_sweep)
+
         #-------------------------- Data processing procedure using defined database and functions over it------------
 
         if is_cartesian:
@@ -33,15 +36,13 @@ class Data():
             top_plate = [0,150]
             bottom_plate = [0,-150]
             bulk_point = [0,0]
-            cut_time = [150,5000]
+            cut_time = [1/f0[0],5000]
         else:
             #Radial
             top_plate = [0,300]
             bottom_plate = [0,0]
             bulk_point = [0,100]
             cut_time = [50,400]
-
-        plot = 1  #plot or neplot 0 or 1
 
         #--------------------------Amplitudes--------------------------------------------------------
 

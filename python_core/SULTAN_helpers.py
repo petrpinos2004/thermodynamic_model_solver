@@ -280,7 +280,7 @@ def amplitude_procedure(variable,f0, start_time, end_time, r, z, moving_mean=Tru
         y_fit, amplitude, phase_shift = sinusoidal_fit(times, detrended_data, f0[i])
         amplitudes[i] = amplitude
 
-        if show==1:
+        if show:
             fig, ax = plt.subplots(figsize=(11, 8), facecolor='white')
             ax.plot(times, y_fit, label="Fit", color="red")
             ax.plot(times, detrended_data, ".", label="Detrended", color="black")
@@ -334,7 +334,7 @@ def cross_correlation_analysis(data1, data2, f0, show=0):
     fig, axs = plt.subplots(3, 1, figsize=(11, 8), facecolor='white')
     plt.rcParams.update({'font.size': 14})
 
-    if show==1:
+    if show:
         # Plot original signals
         axs[0].plot(time1, signal1, color="blue")
         axs[0].plot(time2, signal2, color="black")
@@ -366,7 +366,7 @@ def cross_correlation_analysis(data1, data2, f0, show=0):
         #fig.text(0.75, 0.56, f"Phase shift = {round(phase_shift, 4)} rad", ha='left', va='top', color="blue", fontsize=13)
 
         plt.tight_layout()
-        plt.savefig("crosscorelation.png", dpi=300, bbox_inches="tight")
+        #plt.savefig("crosscorelation.png", dpi=300, bbox_inches="tight")
         plt.show()
 
     return time_delay, phase_shift
