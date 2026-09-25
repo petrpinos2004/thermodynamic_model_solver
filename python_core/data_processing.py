@@ -13,12 +13,8 @@ class Data():
 
         #-------------------------- Starting sequence to guess looping parameters, names and dates--------------------
 
-        input_filename = Path(
-            rf'C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\thermodynamic_model\data_output\raw_simulation_data\{name}.txt'
-        )
-        output_filename = Path(
-            rf'C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\thermodynamic_model\data_output\processed_simulation_data\{name}_output.csv'
-        )
+        input_filename = Path('data_output') / 'raw_simulation_data' / f'{name}.txt'
+        output_filename = Path('data_output') / 'processed_simulation_data' / f'{name}_output.csv'
 
         sweep, parametric_sweep, studies, header,modulation, date, is_cartesian, criterion = SULTAN.starting_procedure(input_filename)
         print(modulation)

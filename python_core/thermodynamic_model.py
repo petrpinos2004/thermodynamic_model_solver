@@ -164,12 +164,8 @@ class thermodynamic_model():
     def run(self):
 
         colors = ['blue', 'red', 'limegreen']
-        output_filename = Path(
-            rf'C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\thermodynamic_model\data_output\raw_simulation_data\{self.name}.txt'
-        )
-        output_image = Path(
-            rf'C:\Users\sulta\Documents\UPT  - kryogenika\starsi_veci_bakalar\thermodynamic_model\image_output\spectral_method_convection_{self.name}.png'
-        )
+        output_filename = Path('data_output') / 'raw_simulation_data' / f'{self.name}.txt'
+        output_image = Path('image_output') / f'spectral_method_convection_{self.name}.png'
 
         frequency_sweep = len(self.physics['freq']) > 1
 
