@@ -24,13 +24,13 @@ class Simulation(mother.thermodynamic_model):
             'T_init' : 5.0,         # Starting fluid temp (K)
             'T_center' : 5.1,       # Modulation temp center (K)
             'freq' : [0.0045],          # Modulation frequency
-            'amplitudes' : [0.025, 0.075],  # Modulation for simulation sweep
+            'amplitudes' : [0.025, 0.050, 0.075],  # Modulation for simulation sweep
             'tmax': [1800],          # Total simulation time
         }
 
         maths = {
-            'N': 100,              # Sine modes
-            'Nx': 500,             # Spatial grid points
+            'N': 125,              # Sine modes
+            'Nx': 1000,             # Spatial grid points
         }
 
         maths['x'] = np.linspace(0, physics['L'], maths['Nx'])
