@@ -33,10 +33,6 @@ class Simulation(mother.thermodynamic_model):
             'Nx': 500,             # Spatial grid points
         }
 
-        maths['x'] = np.linspace(0, physics['L'], maths['Nx'])
-        maths['dx'] = maths['x'][1] - maths['x'][0]
-        maths['mid_idx'] = maths['Nx'] // 2
-
         super().__init__(physics, maths, name, plot)
 
 ####################################################

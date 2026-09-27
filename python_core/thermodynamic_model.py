@@ -63,6 +63,11 @@ class thermodynamic_model():
         self.physics = physics
         self.maths = maths
 
+        physics['Ra_c'] = 1708
+
+        maths['x'] = np.linspace(0, physics['L'], maths['Nx'])
+        maths['dx'] = maths['x'][1] - maths['x'][0]
+        maths['mid_idx'] = maths['Nx'] // 2
         maths['BL_mask'] = [
             maths['x'] <= 5 * self.physics['delta_diff'][i]
             for i in range(len(self.physics['delta_diff']))
@@ -89,7 +94,6 @@ class thermodynamic_model():
         return A_temp * (2 * np.pi * f) * np.cos(2 * np.pi * f * t)
 
     def base_functions(self, N, Nx):
-        # --- Modes and Pre-calculated Operators ---
         lambd = (np.arange(N) + 0.5) * np.pi / self.physics['L']
             
         # Basis matrices: shape (N, Nx)
@@ -110,9 +114,10 @@ class thermodynamic_model():
             if deltaL > 0:
                 Ra = (self.physics['g']*self.physics['alpha_p']*deltaT)/(self.physics['nu']*self.physics['kappa']) * deltaL**3
                 Nu = self.physics['xi'] * Ra**self.physics['ratio']
-                if Nu > 1:
-                    return {'Nu' : Nu,
-                            'Ra' : Ra}
+                if Ra > self.physics['Ra_c']:
+                    if Nu > 1:
+                        return {'Nu' : Nu,
+                                'Ra' : Ra}
         return {'Nu' : 1,
                 'Ra' : 0}
 
@@ -121,7 +126,7 @@ class thermodynamic_model():
         T = c @ self.maths['psi'] + self.T_top(t, A_temp, f)
         grad_T = c @ self.maths['d_psi_dx'] 
         
-        # 2. Spatially varying Nusselt profile Nu(x)
+        # Spatially varying Nusselt profile Nu(x)
         Nu_arr = np.ones(self.maths['Nx'])
         unstable_mask = (grad_T > 1e-3) & BL_mask
         start, end = find_longest_true_sequence(unstable_mask)
