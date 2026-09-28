@@ -212,7 +212,7 @@ def cuadratic_fit(x, y):
     return y_fit  # shape matches y
 
 def plot_linear_fit(x, y):
-    y_fit = linear_fit(x, y)
+    y_fit, _ = linear_fit(x, y)
     plt.plot(x, y, 'o', label="Original")
     plt.plot(x, y_fit, '-', label="Linear fit")
     plt.legend()
@@ -266,6 +266,7 @@ def amplitude_procedure(variable,f0, start_time, end_time, r, z, moving_mean=Tru
     sequence = create_time_sequence(r, z, variable)
     detrend_sequence = []
     amplitudes = np.zeros(studies)
+    slopes = np.zeros(studies)
 
     for i in range(studies):
         sequence[i] = cut_time_sequence(sequence[i], start_time, end_time)
@@ -273,18 +274,21 @@ def amplitude_procedure(variable,f0, start_time, end_time, r, z, moving_mean=Tru
         temps = sequence[i][:, 1]
 
         if moving_mean:
-            times, detrended_data = moving_mean_detrend(times, temps, 1/f0[i])
+            _, slopes[i] = linear_fit(times, temps)
+            detrended_times, detrended_data = moving_mean_detrend(times, temps, 1/f0[i])
         else:
+            _, slopes[i] = linear_fit(times, temps)
             detrended_data = detrend(times, temps)
-        detrend_sequence.append([times, detrended_data])
+            detrended_times = times
+        detrend_sequence.append([detrended_times, detrended_data])
 
-        y_fit, amplitude, phase_shift = sinusoidal_fit(times, detrended_data, f0[i])
+        y_fit, amplitude, phase_shift = sinusoidal_fit(detrended_times, detrended_data, f0[i])
         amplitudes[i] = amplitude
 
         if show:
             fig, ax = plt.subplots(figsize=(11, 8), facecolor='white')
-            ax.plot(times, y_fit, label="Fit", color="red")
-            ax.plot(times, detrended_data, ".", label="Detrended", color="black")
+            ax.plot(detrended_times, y_fit, label="Fit", color="red")
+            ax.plot(detrended_times, detrended_data, ".", label="Detrended", color="black")
 
             # Relative position (0.75 means 75% to the right, 0.62 means 62% up)
             plt.figtext(0.3, 0.02,  # (x, y) in figure coordinates — 0.1 from left, -0.05 below the plot
@@ -297,7 +301,9 @@ def amplitude_procedure(variable,f0, start_time, end_time, r, z, moving_mean=Tru
             ax.legend()
             plt.show()
 
-    return amplitudes, detrend_sequence
+            plot_linear_fit(times, temps)
+
+    return amplitudes, detrend_sequence, slopes
 
 def cross_correlation_analysis(data1, data2, f0, show=0):
     time1 = data1[0]

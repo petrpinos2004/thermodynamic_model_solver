@@ -43,26 +43,26 @@ class Data():
         #--------------------------Amplitudes--------------------------------------------------------
 
         if criterion:
-            Tt_amplitude, detrend_sequence_top = SULTAN.amplitude_procedure("Ref", f0, cut_time[0],cut_time[1], top_plate[0], top_plate[1], show=plot)
-            Tb_amplitude, detrend_sequence_bottom = SULTAN.amplitude_procedure("Tb",f0, cut_time[0],cut_time[1], bottom_plate[0], bottom_plate[1], show=plot)
-            Tp_amplitude, detrend_sequence_bulk = SULTAN.amplitude_procedure("Age", f0, cut_time[0],cut_time[1], top_plate[0], top_plate[1], show=plot)
+            Tt_amplitude, detrend_sequence_top, slope_top = SULTAN.amplitude_procedure("Ref", f0, cut_time[0],cut_time[1], top_plate[0], top_plate[1], show=plot)
+            Tb_amplitude, detrend_sequence_bottom, slope_bottom = SULTAN.amplitude_procedure("Tb",f0, cut_time[0],cut_time[1], bottom_plate[0], bottom_plate[1], show=plot)
+            Tp_amplitude, detrend_sequence_bulk, slope_bulk = SULTAN.amplitude_procedure("Age", f0, cut_time[0],cut_time[1], top_plate[0], top_plate[1], show=plot)
         else:
             #Top plate
-            Tt_amplitude, detrend_sequence_top = SULTAN.amplitude_procedure("T", f0, cut_time[0],cut_time[1], top_plate[0], top_plate[1], show=plot)
+            Tt_amplitude, detrend_sequence_top, slope_top = SULTAN.amplitude_procedure("T", f0, cut_time[0],cut_time[1], top_plate[0], top_plate[1], show=plot)
 
             #Temperatures
-            Tb_amplitude, detrend_sequence_bottom = SULTAN.amplitude_procedure("T",f0, cut_time[0],cut_time[1], bottom_plate[0], bottom_plate[1], show=plot)
-            Tp_amplitude, detrend_sequence_bulk = SULTAN.amplitude_procedure("T",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
+            Tb_amplitude, detrend_sequence_bottom, slope_bottom = SULTAN.amplitude_procedure("T",f0, cut_time[0],cut_time[1], bottom_plate[0], bottom_plate[1], show=plot)
+            Tp_amplitude, detrend_sequence_bulk, slope_bulk = SULTAN.amplitude_procedure("T",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
 
             #Pressure
-            p_amplitude, detrend_sequence_p = SULTAN.amplitude_procedure("p",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
+            p_amplitude, detrend_sequence_p, slope_p = SULTAN.amplitude_procedure("p",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
 
             #Heat across the boundary
-            Q_amplitude, detrend_sequence_Q = SULTAN.amplitude_procedure("Q",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
+            Q_amplitude, detrend_sequence_Q, slope_Q = SULTAN.amplitude_procedure("Q",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
             #Power across the boundary
-            P_amplitude, detrend_sequence_P = SULTAN.amplitude_procedure("P",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
+            P_amplitude, detrend_sequence_P, slope_P = SULTAN.amplitude_procedure("P",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
             #internal energy change
-            U_amplitude, detrend_sequence_U = SULTAN.amplitude_procedure("U_V",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
+            U_amplitude, detrend_sequence_U, slope_U = SULTAN.amplitude_procedure("U_V",f0, cut_time[0],cut_time[1], bulk_point[0], bulk_point[1], show=plot)
 
         def modulation_depth(x):
             return x/Tt_amplitude
@@ -102,9 +102,9 @@ class Data():
         with open(output_filename, "w") as f:
 
             if criterion:
-                f.write(f"Modulation\tDate\tsweep through {sweep}\tf [Hz]\tAT [K]\tAB [K]\tAGe [K]\tAGe/AT\tAB/AT\ttau_TB [s]\ttau_TGe [s]\n")
+                f.write(f"Modulation\tDate\tsweep through {sweep}\tf [Hz]\tAT [K]\tAB [K]\tAGe [K]\tAGe/AT\tAB/AT\tslope_AGe\tslope_AB\ttau_TB [s]\ttau_TGe [s]\n")
                 
-                for sweep_val, f_val, tta, tba, tpa, x1, x2, x3, x4 in zip(
+                for sweep_val, f_val, tta, tba, tpa, x1, x2, x3, x4, x5, x6 in zip(
                     parametric_sweep,
                     f0,
                     Tt_amplitude,
@@ -112,18 +112,20 @@ class Data():
                     Tp_amplitude,
                     x1_list,
                     x2_list,
+                    slope_bulk,
+                    slope_bottom,
                     time_delay_Tb,
                     time_delay_Tp,
                 ):
                 
                     f.write(
-                        f"{modulation}\t{date}\t{sweep_val}\t{f_val}\t{tta}\t{tba}\t{tpa}\t{x2}\t{x1}\t{x3}\t{x4}\n"
+                        f"{modulation}\t{date}\t{sweep_val}\t{f_val}\t{tta}\t{tba}\t{tpa}\t{x2}\t{x1}\t{x3}\t{x4}\t{x5}\t{x6}\n"
                     )
             else:
                 f.write(f"Modulation\tDate\tsweep through {sweep}\tf [Hz]\tAT [K]\tAB [K]\tAGe [K]\tAGe/AT\tAB/AT\tAp [Pa]\tAQ "
                         f"[J]\tAU [J]\tAP (vykon)\ttau_TB [s]\ttau_TGe [s]\ttau_p [s]\ttau_Q [s]\ttau_U [s]\t tau_P\n")
 
-                for sweep_val, f_val, tta, tba, tpa, x1, x2, x3, x4, x5, u1, u2, u3, u4, u5, u6, u7 in zip(
+                for sweep_val, f_val, tta, tba, tpa, x1, x2, x3, x4, x5, u1, u2, u3, u4, u5, u6, u7, u8, u9 in zip(
                     parametric_sweep,
                     f0,
                     Tt_amplitude,
@@ -131,6 +133,8 @@ class Data():
                     Tp_amplitude,
                     x1_list,
                     x2_list,
+                    slope_bulk,
+                    slope_bottom,
                     p_amplitude,
                     Q_amplitude,
                     U_amplitude,
@@ -145,7 +149,7 @@ class Data():
 
                     f.write(
                         f"{modulation}\t{date}\t{sweep_val}\t{f_val}\t{tta}\t{tba}\t{tpa}\t{x2}\t{x1}\t{x3}\t{x4}\t{x5}\t{u1}\t{u2}"
-                        f"\t{u3}\t{u4}\t{u5}\t{u6}\t{u7}\n"
+                        f"\t{u3}\t{u4}\t{u5}\t{u6}\t{u7}\t{u8}\t{u9}\n"
                     )
 
         print(f'Data succesfully saved to {output_filename}')
