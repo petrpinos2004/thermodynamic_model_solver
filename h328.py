@@ -12,25 +12,25 @@ class Simulation(mother.thermodynamic_model):
 
         physics = {
             'L' : 0.3,  
-            'kappa' : 1.54e-8,      # Thermal diffusivity
-            'gamma' : 7.61,         # Gamma
-            'nu' : 4.43e-8,         # Dynamic viscosity
-            'g' : 9.81,             # Gravity
-            'alpha_p' : 63.85,       # Expansivity
-            'ratio' : 1/3,          # Nu-Ra exponent
+            'kappa' : 2.2e-8,       # Thermal diffusivity
+            'gamma' : 5.58,          # Gamma
+            'nu' : 4.8e-8,          # Dynamic viscosity
+            'g' : 9.81,              # Gravity
+            'alpha_p' : 1.11,         # Expansivity
+            'ratio' : 1/3,           # Nu-Ra exponent
             'xi' : 0.06,             # Nu-Ra prefactor
-            'delta_diff' : [0.0007], # Stokes diffusion layer thickness
+            'delta_diff' : [0.00083], # Stokes diffusion layer thickness
             
-            'T_init' : 5.0,         # Starting fluid temp (K)
-            'T_center' : 5.1,       # Modulation temp center (K)
-            'freq' : [0.01],          # Modulation frequency
+            'T_init' : 5.24,         # Starting fluid temp (K)
+            'T_center' : 5.31,       # Modulation temp center (K)    
+            'freq' : [0.01],         # Modulation frequency
             'amplitudes' : [0.050],  # Modulation for simulation sweep
             'tmax': [1000],          # Total simulation time
         }
 
         maths = {
-            'N': 100,              # Sine modes
-            'Nx': 500,             # Spatial grid points
+            'N': 300,                # Sine modes
+            'Nx': 10000,             # Spatial grid points
         }
 
         super().__init__(physics, maths, name, plot)

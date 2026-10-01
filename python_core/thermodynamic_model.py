@@ -64,6 +64,8 @@ class thermodynamic_model():
         self.maths = maths
 
         physics['Ra_c'] = 1708
+        physics['xi'] = 0
+        physics['ratio'] = 1/3    
 
         maths['x'] = np.linspace(0, physics['L'], maths['Nx'])
         maths['dx'] = maths['x'][1] - maths['x'][0]
