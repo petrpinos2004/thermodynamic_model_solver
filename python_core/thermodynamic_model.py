@@ -2,6 +2,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 from pathlib import Path
+import sys
 
 ###################################################
 # Define helper methods
@@ -63,9 +64,22 @@ class thermodynamic_model():
         self.physics = physics
         self.maths = maths
 
+        if len(sys.argv) >= 3:
+            physics['xi'] = float(sys.argv[1])
+            gamma_input = sys.argv[2]
+
+            if "/" in gamma_input:
+                num, den = map(float, gamma_input.split("/"))
+                physics['ratio'] = num / den
+            else:
+                physics['ratio'] = float(gamma_input)
+
         physics['Ra_c'] = 1708
-        physics['xi'] = 0
-        physics['ratio'] = 1/3    
+        physics['xi'] = 0.01
+        physics['ratio'] = 2/7
+
+        if self.name == "report":
+            return   
 
         maths['x'] = np.linspace(0, physics['L'], maths['Nx'])
         maths['dx'] = maths['x'][1] - maths['x'][0]
@@ -85,8 +99,6 @@ class thermodynamic_model():
             'result_times' : [],
             'header_names' : ["Time(s)"],
         }
-
-        print(f'Running simulation: {self.name}')
 
     # --- Functions ---
     def T_top(self, t, A_temp, f): 
@@ -193,7 +205,7 @@ class thermodynamic_model():
             freq = value if frequency_sweep else other[0]
             A_temp = other[0] if frequency_sweep else value
 
-            print(f"Running simulation: amplitudes = {A_temp*1000:.1f} mK, Frequency = {freq:.4f} Hz")
+            print(f"Running simulation {self.name}: amplitudes = {A_temp*1000:.1f} mK, Frequency = {freq:.4f} Hz")
             
             c0 = (self.physics['T_init'] - self.T_top(0, A_temp, freq)) * (2.0 / (self.physics['L'] * self.maths['lambda']))
             

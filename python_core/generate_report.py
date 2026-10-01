@@ -1,11 +1,21 @@
 from pathlib import Path
 import pandas as pd
+from fractions import Fraction
+from thermodynamic_model import thermodynamic_model
 
-print("Please add simulation name to save in /data_output/results folder:")
-print("------------------------------------------------------------------")
-name = input()
-print()
+# Initialize physics dict to extract the values populated inside __init__
+physics = {}
+maths = {}
+_ = thermodynamic_model(physics=physics, maths=maths, name="report")
+gamma = physics.get('ratio')
+xi = physics['xi']
 
+frac = Fraction(gamma).limit_denominator(100)
+gamma_str = f"{frac.numerator}d{frac.denominator}"
+xi_str = str(xi).replace(".", "p")
+name = f"gamma_{gamma_str}_xi_{xi_str}_auto"
+
+# --- YOUR ORIGINAL LOGIC UNCHANGED BELOW ---
 input_filename = Path('data_output') / 'processed_simulation_data'
 output_filename = Path('data_output') / 'results' / f'{name}_output.csv'
 
