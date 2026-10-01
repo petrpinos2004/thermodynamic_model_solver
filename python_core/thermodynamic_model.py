@@ -63,6 +63,7 @@ class thermodynamic_model():
         self.name = name
         self.plot = plot
         self.physics = physics
+        self.physics['Ra_c'] = 1708
         self.maths = maths
 
         if len(sys.argv) >= 3:
@@ -75,7 +76,7 @@ class thermodynamic_model():
             else:
                 physics['ratio'] = float(gamma_input)
 
-        self.physics['Ra_c'] = 1708
+        self.pos_id = int(sys.argv[3]) if len(sys.argv) >= 4 else 0
 
         if self.name == "report":
             return   
@@ -214,7 +215,7 @@ class thermodynamic_model():
             
             pbar_desc = f"{self.name}: Amplitude = {A_temp*1000:.1f} mK, Frequency = {freq:.4f} Hz"
             with tqdm(
-                total=tmax[i], desc=pbar_desc, unit="s", leave=True
+                total=tmax[i], desc=pbar_desc, unit="s", position=self.pos_id, leave=True
             ) as pbar:
                 last_t = [0.0]
 
@@ -272,7 +273,7 @@ class thermodynamic_model():
             for row in all_data:
                 line = "\t".join(map(str, row))
                 f.write(line + "\n")
-        print(f"Data successfully saved to {output_filename}")
+        #print(f"Data successfully saved to {output_filename}")
 
         plt.figure(figsize=(10, 6))
         for i in range(len(sweep)):

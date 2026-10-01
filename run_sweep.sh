@@ -25,12 +25,12 @@ for xi in "${xi_values[@]}"; do
     for gamma in "${gamma_values[@]}"; do
         echo "Running sweep iteration: xi=$xi, gamma=$gamma"
 
-        python h328.py "$xi" "$gamma" &
-        python h429.py "$xi" "$gamma" &
-        python h430.py "$xi" "$gamma" &
-        python h431.py "$xi" "$gamma" &
-        python h432.py "$xi" "$gamma" &
-        python h433.py "$xi" "$gamma" &
+        python h328.py "$xi" "$gamma" 0 &
+        python h429.py "$xi" "$gamma" 1 &
+        python h430.py "$xi" "$gamma" 2 &
+        python h431.py "$xi" "$gamma" 3 &
+        python h432.py "$xi" "$gamma" 4 &
+        python h433.py "$xi" "$gamma" 5 &
         wait
 
         python python_core/generate_report.py "$xi" "$gamma"

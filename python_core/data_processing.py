@@ -17,10 +17,9 @@ class Data():
         output_filename = Path('data_output') / 'processed_simulation_data' / f'{name}_output.csv'
 
         sweep, parametric_sweep, studies, header,modulation, date, is_cartesian, criterion = SULTAN.starting_procedure(input_filename)
-        print(modulation)
-
-        print(f"Sweeping parameter identified as: {sweep} \n "
-            f"with values {parametric_sweep} \n")
+        
+        #print(f"Sweeping parameter identified as: {sweep} \n "
+         #   f"with values {parametric_sweep} \n")
 
         if not len(f0)==len(parametric_sweep):
             f0 = f0 * len(parametric_sweep)
@@ -152,7 +151,7 @@ class Data():
                         f"\t{u3}\t{u4}\t{u5}\t{u6}\t{u7}\t{u8}\t{u9}\n"
                     )
 
-        print(f'Data succesfully saved to {output_filename}')
+        #print(f'Data succesfully saved to {output_filename}')
 
 #sequence = SULTAN.create_time_sequence(bulk_point[0], bulk_point[1], "T")
 
