@@ -3,6 +3,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
+from tqdm import tqdm
 
 ###################################################
 # Define helper methods
@@ -74,9 +75,7 @@ class thermodynamic_model():
             else:
                 physics['ratio'] = float(gamma_input)
 
-        physics['Ra_c'] = 1708
-        physics['xi'] = 0.01
-        physics['ratio'] = 2/7
+        self.physics['Ra_c'] = 1708
 
         if self.name == "report":
             return   
@@ -180,6 +179,12 @@ class thermodynamic_model():
         return {'Ra' : Ra_array,
                 'Nu' : Nu_array}
 
+    def system_progress_bar(self, t, c, A_temp, freq, BL_mask_val, pbar, last_t):
+        if t > last_t[0]:
+            pbar.update(t - last_t[0])
+            last_t[0] = t
+        return self.system(t, c, A_temp, freq, BL_mask_val)
+
     def run(self):
 
         colors = ['blue', 'red', 'limegreen']
@@ -204,18 +209,22 @@ class thermodynamic_model():
         for i, value in enumerate(sweep):
             freq = value if frequency_sweep else other[0]
             A_temp = other[0] if frequency_sweep else value
-
-            print(f"Running simulation {self.name}: amplitudes = {A_temp*1000:.1f} mK, Frequency = {freq:.4f} Hz")
             
             c0 = (self.physics['T_init'] - self.T_top(0, A_temp, freq)) * (2.0 / (self.physics['L'] * self.maths['lambda']))
             
-            sol = solve_ivp(
-                fun=lambda t, c: self.system(t, c, A_temp, freq, BL_mask[i]),
-                t_span=[0, tmax[i]],
-                y0=c0,
-                t_eval=t_eval[i],
-                method='Radau'  # Changed to implicit solver for stiff step-function jump
-            )
+            pbar_desc = f"{self.name}: Amplitude = {A_temp*1000:.1f} mK, Frequency = {freq:.4f} Hz"
+            with tqdm(
+                total=tmax[i], desc=pbar_desc, unit="s", leave=True
+            ) as pbar:
+                last_t = [0.0]
+
+                sol = solve_ivp(
+                    fun=lambda t, c: self.system_progress_bar(t, c, A_temp, freq, BL_mask[i], pbar, last_t),
+                    t_span=[0, tmax[i]],
+                    y0=c0,
+                    t_eval=t_eval[i],
+                    method="RK45",
+                )
             self.solutions['solutions'].append(sol)
             
             T_mid = (sol.y.T @ self.maths['psi'][:, self.maths['mid_idx']]) + self.T_top(sol.t, A_temp, freq)   
