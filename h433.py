@@ -12,14 +12,14 @@ class Simulation(mother.thermodynamic_model):
 
         physics = {
             'L' : 0.3,  
-            'kappa' : 2.37e-7,      # Thermal diffusivity
-            'gamma' : 1.9,         # Gamma
-            'nu' : 1.91e-7,         # Dynamic viscosity
+            'kappa' : 2.e-7,      # Thermal diffusivity
+            'gamma' : 1.92,         # Gamma
+            'nu' : 1.83e-7,         # Dynamic viscosity
             'g' : 9.81,             # Gravity
-            'alpha_p' : 0.26,       # Expansivity
+            'alpha_p' : 0.27,       # Expansivity
             'ratio' : 1/3,          # Nu-Ra exponent
             'xi' : 0.06,             # Nu-Ra prefactor
-            'delta_diff' : [0.00409], # Stokes diffusion layer thickness
+            'delta_diff' : [0.00399], # Stokes diffusion layer thickness
             
             'T_init' : 5.0,         # Starting fluid temp (K)
             'T_center' : 5.1,       # Modulation temp center (K)
