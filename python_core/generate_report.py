@@ -13,7 +13,7 @@ xi = physics['xi']
 frac = Fraction(gamma).limit_denominator(100)
 gamma_str = f"{frac.numerator}d{frac.denominator}"
 xi_str = str(xi).replace(".", "p")
-name = f"gamma_{gamma_str}_xi_{xi_str}_auto"
+name = f"gamma_{gamma_str}_xi_{xi_str}_bulk"
 
 # --- YOUR ORIGINAL LOGIC UNCHANGED BELOW ---
 input_filename = Path('data_output') / 'processed_simulation_data'
