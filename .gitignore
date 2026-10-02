@@ -1,5 +1,5 @@
 *.png
 *.vscode*
-*image_output/*
-*data_output/*
+*.csv
+*.txt
 *__pycache__/*
