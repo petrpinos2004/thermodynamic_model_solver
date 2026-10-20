@@ -29,8 +29,8 @@ class Simulation(mother.thermodynamic_model):
         }
 
         maths = {
-            'N': 200,              # Sine modes
-            'Nx': 5000,             # Spatial grid points
+            'N': int(1.5*200),              # Sine modes
+            'Nx': int(1.5*5000),             # Spatial grid points
         }
 
         super().__init__(physics, maths, name, plot)
